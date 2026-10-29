@@ -49,6 +49,7 @@ details{text-align:left;margin:0 0 16px;max-height:140px;overflow:auto;font-size
 <div class="bar"><i id="bar"></i></div>
 <select id="mode"><option value="free">Modo livre (qualquer ordem)</option><option value="type">Digitar o destacado</option><option value="click">Clicar no município</option></select>
 <button class="p" id="go">▶ Iniciar jogo (15 min)</button>
+<button class="p" id="again2" style="display:none;padding:14px;font-size:1.05rem">🔄 Jogar de novo</button>
 <div id="q"></div>
 <div class="row" id="tin"><input type="text" id="ans" placeholder="Digite um município…" autocomplete="off" autocapitalize="off"><button class="p" id="ok">Enviar</button></div>
 <div class="row acts"><button id="hint">💡 Dica</button><button id="skip">Pular</button><button id="giveup">🏳️ Desistir</button><button id="focus">🔍 Focar</button></div>
@@ -56,6 +57,7 @@ details{text-align:left;margin:0 0 16px;max-height:140px;overflow:auto;font-size
 <div id="msg"></div></aside></main>
 
 <div class="ov h" id="end"><div class="box"><h2 id="et"></h2><p id="es"></p><div class="big"><span id="ea"></span><small> / 184</small></div><p id="ep"></p>
+<details open><summary id="am"></summary><div id="al"></div></details>
 <details><summary id="em"></summary><div id="el"></div></details>
 <div class="row" style="justify-content:center"><button id="see">Ver mapa</button><button class="p" id="again">Jogar de novo</button></div></div></div>
 <datalist id="dl"></datalist>
@@ -82,7 +84,7 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a
 const say=t=>$("#msg").textContent=t,done=p=>p.classList.contains("ok")||p.classList.contains("sk");
 function upd(){$("#n").textContent=found;$("#bar").style.width=found/TOTAL*100+"%"}
 const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return `${String(s/60|0).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`};
-function setup(){clearInterval(iv);running=false;cur=null;mode=$("#mode").value;found=0;P.forEach(p=>p.setAttribute("class",""));
+function setup(){clearInterval(iv);$("#again2").style.display="none";;$("#again2").style.display="none";;running=false;cur=null;mode=$("#mode").value;found=0;P.forEach(p=>p.setAttribute("class",""));
  svg.classList.toggle("click",mode=="click");$("#tin").style.display=mode=="click"?"none":"flex";
  $("#focus").style.display=mode=="type"?"":"none";$("#skip").style.display=mode=="free"?"none":"";$("#sl").style.display=mode=="free"?"none":"";
  vb={...full};setVB();upd();$("#timer").textContent="⏱ "+fmt(LIMIT);$("#timer").classList.remove("low");
@@ -96,7 +98,12 @@ function finish(why){if(!running)return;running=false;clearInterval(iv);if(cur!=
  $("#es").textContent=why=="all"?"Parabéns, você conhece o Ceará de cabo a rabo!":why=="time"?"Os 15 minutos acabaram.":"Sem problema, dá pra tentar de novo.";
  $("#ea").textContent=found;$("#ep").textContent=`${pc}% dos municípios · tempo usado: ${fmt(used)}`;
  $("#em").textContent=miss.length?`Faltaram ${miss.length} municípios`:"Nenhum faltou 👏";
- $("#el").textContent=miss.map(i=>D[i][0]).sort((a,b)=>a.localeCompare(b,"pt")).join(" · ");
+const hits=D.map((d,i)=>i).filter(i=>P[i].classList.contains("ok"));
+const names=a=>a.map(i=>D[i][0]).sort((x,y)=>x.localeCompare(y,"pt")).join(" · ");
+$("#am").textContent=`✅ Você acertou ${hits.length}`;
+$("#al").textContent=names(hits)||"Nenhum acerto desta vez";
+$("#el").textContent=names(miss);
+$("#again2").style.display="block";
  $("#q").textContent=`Fim de jogo: ${found} de ${TOTAL}`;say("Clique nos municípios cinza para ver o nome.");
  setTimeout(()=>$("#end").classList.remove("h"),400)}
 function next(){if(!running)return;if(cur!=null)P[cur].classList.remove("cur");wrong=0;hinted=false;$("#ans").value="";
@@ -127,7 +134,7 @@ $("#hint").onclick=()=>{if(!running)return;
 $("#skip").onclick=()=>{if(!running||cur==null)return;P[cur].classList.remove("cur");P[cur].classList.add("sk");next()};
 $("#giveup").onclick=()=>{if(running&&confirm("Quer mesmo desistir e ver o resultado?"))finish("giveup")};
 $("#focus").onclick=()=>cur!=null&&focusOn(cur);
-$("#go").onclick=begin;$("#again").onclick=setup;$("#mode").onchange=setup;$("#see").onclick=()=>$("#end").classList.add("h");
+$("#go").onclick=begin;$("#again2").onclick=setup;$("#again").onclick=setup;$("#mode").onchange=setup;$("#see").onclick=()=>$("#end").classList.add("h");
 $("#sug").onchange=e=>{$("#dl").innerHTML=e.target.checked?D.map(d=>d[0]).sort().map(n=>`<option value="${n}">`).join(""):"";$("#ans").setAttribute("list",e.target.checked?"dl":"")};
 setup();
 </script></body></html>
